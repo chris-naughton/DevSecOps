@@ -1,0 +1,30 @@
+Install: 
+sudo apt install ansible
+
+Verify things are working: 
+ansible all -m ping
+
+List all hosts: 
+ansible all --list-hosts
+
+Pull a list of information about the server: 
+ALL HOSTS ansible all -m gather_facts
+SPECIFIC HOST add --limit <ip address>
+
+Run commands as sudo example: 
+ansible all -m apt -a update_cache=true --become --ask-become-pass  
+
+Run a playbook: 
+ansible-playbook --ask-become-pass install_apache.yml 
+
+Gather variables from a host (these can be used for "when" statements): 
+ansible all -m gather_facts --limit 10.0.2.6 | grep ansible_distribution
+
+List all tags in a playbook: 
+ansible-playbook --list-tags <example>.yml
+
+Using a playbook with tags: 
+ansible-playbook --tags centos --ask-become-pass <example>.yml 
+
+Using a playbook with multiple tags: 
+ansible-playbook --tags "centos,db" --ask-become-pass <example>.yml 

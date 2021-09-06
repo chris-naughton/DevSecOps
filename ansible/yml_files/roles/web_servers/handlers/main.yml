@@ -1,0 +1,4 @@
+ - name: restart_apache # name in the main taskbook
+   service:
+     name: "{{ apache_service }}"
+     state: restarted

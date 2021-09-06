@@ -1,0 +1,12 @@
+- name: install unzip
+  package:
+    name: unzip
+  
+- name: install terraform 
+  unarchive: # allow to unzip a compressed file
+    src: https://releases.hashicorp.com/terraform/0.12.18/terraform_0.12.18_linux_amd64.zip
+    dest: /usr/local/bin # place it here
+    remote_src: yes # don't look in the files dir this is a remote source
+    mode: 0755 # permissions
+    owner: root # user
+    group: root # group

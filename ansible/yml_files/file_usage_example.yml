@@ -1,0 +1,94 @@
+---
+
+- hosts: all
+  become: true # sudo 
+  pre_tasks: # this can be used to state things that should be run ahead of other tasks
+
+  - name: install updates (CentOS)
+    tags: always # always run this 
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: install updates (Ubuntu)
+    tags: always # always run this
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+  
+  - name: install terraform 
+    unarchive: # allow to unzip a compressed file
+      src: https://releases.hashicorp.com/terraform/0.12.18/terraform_0.12.18_linux_amd64.zip
+      dest: /usr/local/bin # place it here
+      remote_src: yes # don't look in the files dir this is a remote source
+      mode: 0755 # permissions
+      owner: root # user
+      group: root # group
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache and php for Ubuntu servers
+    tags: apache,apache2,ubuntu 
+    apt:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: install apache and php for CentOS servers
+    tags: apache,centos,httpd
+    dnf:
+      name:
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name: copy default html file for site
+    tags: apache,apache2,httpd
+    copy: # copy a file
+      src: site.html # source file. Note "files" dir is assumed
+      dest: /var/www/html/index.html # dest on the host. Note this does not need to be the same name as source
+      owner: root # set user
+      group: root # set group
+      mode: 0644 # set file permissions
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: Install mariadb package (CentOS)
+    tags: centos,db.mariadb
+    dnf:
+      name: mariadb
+      state: latest
+    when: ansible_distribution == "CentOS"
+  
+  - name: Install mariadb package (Ubuntu)
+    tags: db,mariadb,ubuntu
+    apt:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    tags: samba
+    package:
+      name: samba

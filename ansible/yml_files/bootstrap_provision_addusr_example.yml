@@ -1,0 +1,45 @@
+---
+
+- hosts: all
+  become: true # sudo 
+  pre_tasks: # this can be used to state things that should be run ahead of other tasks
+
+  - name: install updates (CentOS)
+    tags: always # always run this 
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: install updates (Ubuntu)
+    tags: always # always run this
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true
+  tasks:
+    ### ADD A USER ###
+  - name: create rad user
+    tags: always 
+    user: 
+      name: rad # username
+      group: root # group
+    ### ADDING AN AUTHORIZED KEY FILE ###
+  - name: add ssh key for rad user
+    tags: always
+    authorized_key:
+      user: rad # user that was just created
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA+3An1t+PkHgmnbPhGnY/2qPGX4BY+lRwe4T16LAs1L ansible" # public key
+    ### ALLOW USE OF SUDO W/O A PASSWORD ###
+  - name: add sudoers file for rad 
+    tags: always
+    copy:
+      src: sudoer_rad
+      dest: /etc/sudoers.d/rad
+      owner: root
+      group: root
+      mode: 0440
+    ### I have added the rad user to the ansible.cfg file as "remote_user" ###

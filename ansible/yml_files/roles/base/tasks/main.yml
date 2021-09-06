@@ -1,0 +1,4 @@
+- name: add ssh key for rad user
+  authorized_key:
+    user: rad
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA+3An1t+PkHgmnbPhGnY/2qPGX4BY+lRwe4T16LAs1L ansible"

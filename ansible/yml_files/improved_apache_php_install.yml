@@ -1,0 +1,13 @@
+---
+
+- hosts: all # apply to all hosts
+  become: true # sudo 
+  tasks:
+
+  - name: update cache and install apache, php packages 
+    package: # use whatever package manager is present on the host os
+      name: 
+        - "{{ apache_package }}" # variable that is set elsewhere and passed in
+        - "{{ php_package }}" # variable that is set elsewhere and passed in
+      state: latest
+      update_cache: yes

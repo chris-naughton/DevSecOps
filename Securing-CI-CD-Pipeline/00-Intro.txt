@@ -1,0 +1,27 @@
+Terms: 
+CI/CD: Continiuos Integration / Devployment or Delivery
+
+SAST: Static Application Security Testing - White Box
+- analyze source code early in the SDLC
+- establish coding practices and guidelines
+
+DAST: Dynamic Applicatoin Security Testing - Black Box
+- analyze and find vulns/threats in a running web applicatoin based on request/response model. 
+
+IAST: Interactive Application Security Testing 
+- This is used to address shortcomings of SAST or DAST
+- This places an agent within the application to perform real-time analysis
+
+RASP: Run-time Application Secutity Protecting
+- More of a Security tool not so much a testing tool. 
+- Plugged into the application to run constant checks. 
+- Can respond by terminiating attacker sessions and alert defneders.
+
+Phased Approach to DevSecOps: 
+
+- Security Training for engineering 
+- Regular code analysis within the CI/CD pipeline
+- Regular compliance monitoring 
+- Include SAST, DAST phases within the pipeline 
+- Define criteria for security phases to pass/fail
+- Security tickets must be included as issues in a sprint

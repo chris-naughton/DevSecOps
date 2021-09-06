@@ -1,0 +1,41 @@
+---
+
+- hosts: all # apply to all hosts
+  become: true # sudo 
+  tasks:
+
+  - name: update repo index
+    apt:
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu" # this can be used against any var. gather_facts is a good way to get vars 
+    #when: ansible_distrobution == "Ubuntu" and ansible_distribution_version == "20.04" # example of being more specific
+
+  - name: install apache2 package # desc of what the play does
+    apt: # module
+      name: apache2 # the package to install with apt
+      state: latest # each time this playbook is run make sure that the packages are latest avail
+    when: ansible_distribution == "Ubuntu"
+
+  - name: add php support for apache
+    apt:
+      name: libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  ### CentOS Stuff ###
+  - name: update repo index
+    dnf:
+      update_cache: yes
+    when: ansible_distribution == "CentOS" 
+
+  - name: install apache2 package 
+    dnf:
+      name: httpd 
+      state: latest 
+    when: ansible_distribution == "CentOS"
+
+  - name: add php support for apache
+    dnf:
+      name: php
+      state: latest
+    when: ansible_distribution == "CentOS"

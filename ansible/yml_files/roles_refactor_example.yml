@@ -1,0 +1,44 @@
+---
+
+- hosts: all
+  become: true # sudo 
+  pre_tasks: # this can be used to state things that should be run ahead of other tasks
+
+  - name: update repo cache (CentOS)
+    tags: always # always run this 
+    dnf:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "CentOS"
+
+  - name: update repo cache (Ubuntu)
+    tags: always # always run this
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true
+  roles:
+    - base
+
+- hosts: workstations
+  become: true
+  roles:
+   - workstations
+
+- hosts: web_servers
+  become: true
+  roles:
+    - web_servers
+
+- hosts: db_servers
+  become: true
+  roles:
+    - db_servers
+
+- hosts: file_servers
+  become: true
+  roles:
+    - file_servers

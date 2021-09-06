@@ -1,0 +1,121 @@
+---
+
+- hosts: all
+  become: true # sudo 
+  pre_tasks: # this can be used to state things that should be run ahead of other tasks
+
+  - name: update repo cache (CentOS)
+    tags: always # always run this 
+    dnf:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "CentOS"
+
+  - name: update repo cache (Ubuntu)
+    tags: always # always run this
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+  
+  - name: install terraform 
+    unarchive: # allow to unzip a compressed file
+      src: https://releases.hashicorp.com/terraform/0.12.18/terraform_0.12.18_linux_amd64.zip
+      dest: /usr/local/bin # place it here
+      remote_src: yes # don't look in the files dir this is a remote source
+      mode: 0755 # permissions
+      owner: root # user
+      group: root # group
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache and php for Ubuntu servers
+    tags: apache,apache2,ubuntu 
+    apt:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: install apache and php for CentOS servers
+    tags: apache,centos,httpd
+    dnf:
+      name:
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+    ### INTERACT WITH A SERVICE ###
+  - name: start httpd service (CentOS)
+    tags: apache,centos,httpd
+    service: # module to interact with a service
+      name: httpd # name of the service to interact with 
+      state: started # desired state
+      enabled: yes 
+    when: ansible_distribution == "CentOS"
+
+    ### EDIT A FILE ###
+  - name: change e-mail address for admin
+    tags: apache,centos,httpd
+    lineinfile: # allows to change a line in a file
+      path: /etc/httpd/conf/httpd.conf # path to the file
+      regexp: '^ServerAdmin' # regex to find a thing
+      line: ServerAdmin always@betesting.zone # line you want to end up with
+    when: ansible_distribution == "CentOS"
+    register: httpd # allows ansible to captures the state in a var associated with the change. KEEP THIS UNIQUE per change
+
+    ### BOUNCE THE SERVICE WHEN THERE IS A CHANGE ###
+  - name: restart httpd (CentOS)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: restarted
+    when: httpd.changed # when the state of the var above has changed
+
+  - name: copy default html file for site
+    tags: apache,apache2,httpd
+    copy: # copy a file
+      src: site.html # source file. Note "files" dir is assumed
+      dest: /var/www/html/index.html # dest on the host. Note this does not need to be the same name as source
+      owner: root # set user
+      group: root # set group
+      mode: 0644 # set file permissions
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: Install mariadb package (CentOS)
+    tags: centos,db.mariadb
+    dnf:
+      name: mariadb
+      state: latest
+    when: ansible_distribution == "CentOS"
+  
+  - name: Install mariadb package (Ubuntu)
+    tags: db,mariadb,ubuntu
+    apt:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    tags: samba
+    package:
+      name: samba

@@ -1,0 +1,82 @@
+### SSH KEYS ###  
+This is where the ssh key lives
+┌──(kali㉿kali)-[~/.ssh]
+└─$ ssh-keygen -t ed25519 -C "ansible"           
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/home/kali/.ssh/id_ed25519): /home/kali/.ssh/ansible
+
+It has been copied over to ubun1 and verified that it is in the authorized_keys
+
+### INVENTORY FILE ### 
+- create an inventory file that contains all of the IP addresses for the machine I want to manage with
+ansible
+- adding FQDN over IP addresses is a better idea as IP addresses can change
+- verify that everything is working with: 
+
+┌──(kali㉿kali)-[~/shields-up/DevSecOps/ansible]
+└─$ ansible all -u ubun1 --key-file ~/.ssh/ansible -i inventory -m ping       
+10.0.2.15 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+all == run against all instances 
+--key-file == keyfile I am passing 
+-i == include inventory file 
+-m == module that I want to run note this is not an ICMP "ping"
+
+### ANSIBLE CONFIG FILE ### 
+- note the ansible.cfg in teh working dir takes priority over the one in /etc/ansible 
+
+I have added an ansible.cfg file to the working dir and specified: 
+- inventory file 
+- priv key 
+- remote user 
+
+This allows me to shorten the ping module command to: 
+                                                                                                                                                                            
+┌──(kali㉿kali)-[~/shields-up/DevSecOps/ansible]
+└─$ ansible all -m ping                                                       
+10.0.2.15 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+### ISSUE ELEVATED PRIV COMMANDS ###
+This allows commands to be run with sudo 
+
+┌──(kali㉿kali)-[~/shields-up/DevSecOps/ansible]
+└─$ ansible all -m apt -a update_cache=true --become --ask-become-pass                                                                  2 ⨯
+BECOME password: 
+10.0.2.15 | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "cache_update_time": 1630257636,
+    "cache_updated": true,
+    "changed": true
+}
+
+-m == module 
+-a == argument 
+--become == allows you to elevate privs (defaults to sudo)
+--ask-become-pass == the password for the sudo user on the box 
+
+Example of installing a package: 
+
+┌──(kali㉿kali)-[~/shields-up/DevSecOps/ansible]
+└─$ ansible all -m apt -a name=<package name here> --become --ask-become-pass
+
+Example of updating an existing package: 
+┌──(kali㉿kali)-[~/shields-up/DevSecOps/ansible]
+└─$ ansible all -m apt -a "name=snapd state=latest"  --become --ask-become-pass
+
+Example of upgrading everything:
+┌──(kali㉿kali)-[~/shields-up/DevSecOps/ansible]
+└─$ ansible all -m apt -a "upgrade=dist"  --become --ask-become-pass
