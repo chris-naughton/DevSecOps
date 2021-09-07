@@ -1,4 +1,4 @@
 docker
 jdk
 jenkins is installed on 192.168.0.13
-app-server is installed on ...
+app-server is installed on 192.168.56.101
