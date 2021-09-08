@@ -1,0 +1,7 @@
+- register at https://cloud.aquasec.com/platform/#/welcomePage
+- install the jenkins plugin for aqua microscanner
+- token is not longer supplied in the reg email...
+- create a new freestyle build 
+
+https://github.com/aquasecurity/microscanner MicroScanner is now deprecated in favour of Trivy
+https://github.com/aquasecurity/trivy

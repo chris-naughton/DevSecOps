@@ -1,0 +1,16 @@
+node('master'){
+    stage('Cloning Git') {
+        checkout scm
+    }
+    stage('Build and Tag'){
+        sh 'echo Build and Tag'
+    }
+    stage('Post to dockerhub'){
+        sh 'echo post to dockerhub'
+    }
+    stage('Pull image server'){
+        sh 'echo pull image server'
+    }
+}
+
+// this resulted in a success

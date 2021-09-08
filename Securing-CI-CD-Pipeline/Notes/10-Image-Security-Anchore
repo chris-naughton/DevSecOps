@@ -1,0 +1,17 @@
+- cloned this to the jenkins server 
+https://github.com/trainmefordevsecops/ANCHORE-SECURITY.git
+- verify that it is up and running after compose up 
+http://192.168.0.13:8228/
+
+- Add the ANCHORE plugin to jenkins
+- Go to global config settings and setup ANCHORE
+- http://192.168.0.13:8228/v1 is the endpoint it needs
+- set admin login
+
+- Create a freestyle job 
+- This is running with the master node 
+- supply github url for project 
+- keep ANCHORE build step setting at default
+- add a shell build step to feed it the image
+
+This never worked

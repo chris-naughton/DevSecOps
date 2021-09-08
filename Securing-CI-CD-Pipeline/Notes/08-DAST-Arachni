@@ -1,0 +1,13 @@
+- Installing this to my app machine and un-tar it
+https://github.com/Arachni/arachni/releases/download/v1.5.1/arachni-1.5.1-0.5.12-linux-x86_64.tar.gz
+
+- scripts are located in /home/app/arachni-1.5.1-0.5.12/bin
+
+- create a new freestyle job to call it 
+
+I added this shell command:
+
+/home/app/arachni-1.5.1-0.5.12/bin/arachni http://192.168.56.101 --report-save-path=${BUILD_TAG}.afr
+/home/app/arachni-1.5.1-0.5.12/bin/arachni_reporter ${BUILD_TAG}.afr --reporter=html:outfile=${BUILD_TAG}.zip
+unzip ${BUILD_TAG}.zip
+rm ${BUILD_TAG}.zip

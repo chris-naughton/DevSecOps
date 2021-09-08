@@ -1,0 +1,8 @@
+Cloning the training SonarQube repo to the app server 
+- made the following modification: 
+vi /etc/sysctl.conf
+vm.max_map_count=262144
+- installed SonarQube scanner 
+sudo npm install sonarqube-scanner
+
+NOTE: none of the steps in the class worked. Circle back and sort this out. 

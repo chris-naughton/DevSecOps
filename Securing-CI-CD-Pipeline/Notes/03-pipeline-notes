@@ -1,0 +1,14 @@
+Types of pipelines: 
+
+Declarative: Script is written withing hte pipeline box of jenkins. 
+Example on my server: Declarative-test
+Scripted: Pipeline job is written in jenkinsfile that is added to a repo
+Example on my server: Multiplayer-game
+-- Pipeline script from SCM
+-- set to git
+-- git url https://github.com/trainmefordevsecops/node-multiplayer-snake.git
+--- no creds needed as this is a public repo
+-- script path is set to Jenkinsfile
+Pipelines are written in Groovy
+
+note I have forked the project https://github.com/naughtron/node-multiplayer-snake.git

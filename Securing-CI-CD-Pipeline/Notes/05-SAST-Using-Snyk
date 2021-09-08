@@ -1,0 +1,25 @@
+- I have created a synk account
+- Configured synk to scan one of my git projects
+-- https://app.snyk.io/org/<username>
+
+synk token 83407780-53d9-4b80-9cd9-d48f8443d2e0
+
+- I have installed synk to the app server via npm 
+- commands to auth
+-- snyk test
+-- snyk auth
+
+On the Jenkins server I am creating a new security job
+- install snyk security plugin
+- create a freestyle project
+- I added a build step with the following
+cd ${WORKSPACE}
+echo "snyk test && snyk monitor" > snyk.sh
+chmod +x snyk.sh
+/bin/bash snyk.sh || true
+snyk test --json | sunk-to-html -o results.html
+
+- I installed the html-publisher plugin
+- I then added a post build step to publish html reports
+
+lastly I added my git repo url to the job and ran it

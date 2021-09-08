@@ -1,0 +1,1 @@
+nohup java -jar agent.jar -jnlpUrl http://192.168.0.13:8080/computer/app/jenkins-agent.jnlp -secret <RAD SECRET HERE> -workDir "/home/app/jenkins_workspace" &

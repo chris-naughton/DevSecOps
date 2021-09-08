@@ -1,0 +1,25 @@
+- Start at manage jenkins 
+- Go to Manage nodes
+- There will be a default main agent present
+- Click on New Node. Give it a name and select perm. 
+- Fill out the next form 
+-- for the Remote root directory create a new directory on the applicaiton server. 
+-- in my case "/home/app/jenkins_workspace" 
+- Go into the jenkins_workspace directory and create an agent directory
+- In order to get the agent configured and connected I had to do the following: 
+-- name: app
+-- remote root dir: /home/app/jenkins
+-- lable: linux
+-- Usage: as much as possible
+-- launch method: connecting to main
+-- custom workdir path: /home/app/jenkins
+-- use WebSocket: on
+-- GLOBAL SECURITY SETTINGS
+--- TCP port for agents set to random
+-- AFTER AGENT WAS SAVED
+--- download agent jar from details page
+--- from working machine scp agent to the app servers /tmp directory
+--- moved agent.jar to the /home/app/jenkins
+--- chmod +x on agent.jar
+--- run the following from app@app:~/jenkins_workspace$:  java -jar agent.jar -jnlpUrl http://192.168.0.13:8080/computer/app/jenkins-agent.jnlp -secret <secret here> -workDir "/home/app/jenkins_workspace"
+--- the above commnad has been made into a shell script "start.sh"
