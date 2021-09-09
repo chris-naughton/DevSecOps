@@ -1,0 +1,27 @@
+Talisman
+
+GitHub: Code Reop
+
+Maven: Used to automate a java project, test, compile, and create jars
+Mavent Test and Package are used in the pipeline
+
+Jenkins: CI/CD tool
+
+PIT Test
+SonarQube
+Trivy
+Dependency
+OPA
+
+Docker: Containers
+
+K8s
+Kubesec
+OWASP ZAP
+Kube-Bench
+Falco 
+Slack
+Istio
+Kiali
+JMeter
+Grafana

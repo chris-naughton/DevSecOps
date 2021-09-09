@@ -1,0 +1,25 @@
+1. added a GitHub WebHook via gits web UI and set it to my jenkins URL
+ending the url with /github-webhook/
+- Content type is application/json
+- Call to jenkins occurs when a push is made to the repo
+
+2. Create a new pipeline called "devsecops-numeric-application"
+- check the GitHub hook trigger
+- add a pipeline build step for pipeline script from scm
+-- select Git and add repo URL
+- save the changes
+
+3. Build using the Jenkinsfile:
+
+pipeline {
+  agent any
+
+  stages {
+      stage('Build Artifact') {
+            steps {
+              sh "mvn clean package -DskipTests=true"
+              archive 'target/*.jar' //so that they can be downloaded later
+            }
+        }   
+    }
+}

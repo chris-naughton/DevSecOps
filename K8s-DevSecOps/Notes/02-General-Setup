@@ -1,0 +1,32 @@
+I have forked this repo for the class 
+https://github.com/naughtron/kubernetes-devops-security
+
+I am using the Azure vm template from the cloned repo to create my VM
+I am going to be using the custom template from the marketplace
+- using the build your own template in the editor
+- using the parameters and template json files
+- resource group: devsecops-group
+
+my VMs DNS is 
+naughtron-devsecops.eastus.cloudapp.azure.com
+
+ssh'ed into the box to install software
+I have cloned the above repo on the VM to run the software install script
+
+Verified by deploying an nginx pod: 
+
+root@devsecops-cloud:~# kubectl run nginx-pod --image nginx
+pod/nginx-pod created
+root@devsecops-cloud:~# kubectl get pod
+NAME        READY   STATUS    RESTARTS   AGE
+nginx-pod   1/1     Running   0          17s
+
+root@devsecops-cloud:~# kubectl expose po nginx-pod --port 80 --type NodePort
+service/nginx-pod exposed
+
+root@devsecops-cloud:~# kubectl get svc
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP        47m
+nginx-pod    NodePort    10.96.63.248   <none>        80:31904/TCP   50s
+
+Running http://naughtron-devsecops.eastus.cloudapp.azure.com:31904/

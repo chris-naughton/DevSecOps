@@ -1,0 +1,53 @@
+- Verified that jenkins is installed and running.
+devsecops@devsecops-cloud:~$ systemctl status jenkins
+
+Console is available: 
+http://naughtron-devsecops.eastus.cloudapp.azure.com:8080/
+
+Installing needed plugins manually
+
+First Build: 
+
+pipeline {
+  agent any
+
+  stages {
+
+    stage('git version') {
+      steps {
+        sh "git version"
+      }
+    }
+
+    stage('maven version') {
+      steps {
+        sh "mvn -v"
+      }
+    }
+
+    stage('docker version') {
+      steps {
+        sh "docker -v"
+      }
+    }
+
+    stage('kubernetes version') {
+      steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+          sh "kubectl version --short"
+        }
+      }
+    }
+  }
+}
+
+I need to pass creds to get the k8s version 
+
+1. First pull the kubectl config file from this location: 
+devsecops@devsecops-cloud:~$ sudo cat /root/.kube/config and save it as a file called 'kubeconfig'
+
+2. Go to manage creds on the Jenkins server and add a secret file to upload the kubeconfg file 
+
+3. Update the file to use the credentials syntax listed on line 36
+
+4. The pipeline now passes

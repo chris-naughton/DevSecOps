@@ -1,0 +1,48 @@
+SDLC Overview: 
+- Configuration Governance and Secure Configurations
+- Static Code Analysis and Secure Coding Education
+- Dependency Scanning 
+- Dynamic Application Security Testing [DAST]
+- Container Scanning and Secure Artifacts
+- Continouus Compliance and Secure Infrastructure
+- Runtime Security, Monitoring and Prevention
+
+IDE Level: 
+Develop:
+- Pre-Commit Hooks
+- Pre-Publish Hooks
+- IDE plugins to check for code quality 
+Git: 
+- Code Scans
+- Secrets Vault
+
+Jenkins/CI Tool Level: 
+Testing:
+- Unit testing
+- Mutation Testing 
+- Static Code Analysis 
+Build:
+- Packages
+- Dependency Scans 
+- Container Images
+- Image Scans 
+- Image Signature
+Deploy - Staging: 
+- Validate Image Signature
+- Integration Testing
+Deploy - Production: 
+- Validate Runtime Configs
+- DAST Pen Testing 
+- Compliance Checks
+- Perf Testing 
+
+Monitor Level: 
+- Log aggregation
+- Security logging 
+- Resource Utilization 
+
+Security Level: 
+- TLS
+- Network Policies
+- Auditing
+- App Armor
