@@ -1,0 +1,21 @@
+Static Application Security Testing aka Static Analysis
+
+Going to be running this as a docker image on my VM
+docker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:latest NOTE!!! I had to downgrade to 8.9.1-community
+
+USE: docker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:8.9.1-community
+
+After Sonar is up and running I am adding a new stage to the Jenkinsfile with this
+
+mvn sonar:sonar \
+  -Dsonar.projectKey=numeric-application \
+  -Dsonar.host.url=http://naughtron-devsecops.eastus.cloudapp.azure.com:9000 \
+  -Dsonar.login=af801d6da6a7e9252a4cfc7dbd1b4f57b7c83f62
+
+Created a new quality gate in the UI
+
+I also have to add a quality gate plugin into Jenkins
+Using this https://plugins.jenkins.io/sonar/
+This is how you pause the pipeline until the quality gate is comupted
+https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-jenkins/#header-6
+

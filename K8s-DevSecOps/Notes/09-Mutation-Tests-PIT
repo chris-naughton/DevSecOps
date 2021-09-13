@@ -1,0 +1,8 @@
+Mutation tests run unit tests against modified versions of application code 
+If the code changes the unit tests should fail 
+If the code changes and the unit tests do not fail then there is a problem
+The goal is to have a high number of mutations that are "killed"
+
+To test this I have updated the applications pom.xml to include the pitest-maven plugin
+I have also updated the NumericApplicationTests.java file and modified the Jenkinsfile to 
+include the build step

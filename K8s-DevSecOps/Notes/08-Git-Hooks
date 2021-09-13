@@ -1,0 +1,84 @@
+Git Hooks: These rely on regex. They are insalled on a dev workstation and can be bypassed. 
+Pre-Commit
+Pre-Push
+
+Talisman: 
+REPO: https://github.com/thoughtworks/talisman
+
+This installs a hook into your repository to ensure that potential secrets or sensitive 
+info do not leave the dev workstation
+- It will validate the outgoing change for things that look suspect. 
+- Can be installed Globally across existing repos, and anything that is init or cloned 
+- Can be installed on a single project repository 
+- It is scanning for patterns
+
+I am installing this on my VM using the single project option
+Installing a pre-push hook using this command: 
+./install-talisman.sh
+Talisman successfully installed to '.git/hooks/pre-push'.
+
+confirmed: 
+root@devsecops-cloud:~/kubernetes-devops-security$ cat .git/hooks/pre-push
+#!/bin/bash
+[[ -n "${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
+CMD="/root/kubernetes-devops-security/.git/hooks/bin/talisman ${DEBUG_OPTS} --githook pre-push"
+[[ -n "${TALISMAN_DEBUG}" ]] && echo "ARGS are $@"
+[[ -n "${TALISMAN_DEBUG}" ]] && echo "Executing: ${CMD}"
+${CMD}
+
+
+Creating a test file with some examples that should be picked up: 
+
+mkdir sec_files && cd sec_files
+echo "username=naughtron" > file1
+echo "secure-password123" > password.txt
+echo "apikey=AizaSyCqhjgrPtr_La56sdUkjfav_laCqhjgrPtr_2s" > file2
+echo "base64encodedsecret=cGFzc3dvcmQtaXMtcXdlcnR5MTIzCg==" > file3
+
+Result: 
+root@devsecops-cloud:~/kubernetes-devops-security/sec_files$ git push
+Username for 'https://github.com': naughtron
+Password for 'https://naughtron@github.com': 
+Talisman Scan: 12 / 12 <-----------------------------------------------------------------> 100.00%  
+
+Talisman Report:
++------------------------+------------------------------------------------------+----------+
+|          FILE          |                        ERRORS                        | SEVERITY |
++------------------------+------------------------------------------------------+----------+
+| sec_files/password.txt | The file name                                        | low      |
+|                        | "sec_files/password.txt"                             |          |
+|                        | failed checks against the                            |          |
+|                        | pattern password                                     |          |
++------------------------+------------------------------------------------------+----------+        
+| sec_files/file3        | Expected file to not to contain                      | high     |        
+|                        | base64 encoded texts such as:                        |          |        
+|                        | base64encodedsecret=cGFzc3dvcmQtaXMtcXdlcnR5MTI...   |          |        
++------------------------+------------------------------------------------------+----------+        
+| sec_files/file3        | Potential secret pattern :                           | low      |        
+|                        | base64encodedsecret=cGFzc3dvcmQtaXMtcXdlcnR5MTIzCg== |          |        
++------------------------+------------------------------------------------------+----------+        
+| sec_files/file2        | Potential secret pattern :                           | low      |        
+|                        | apikey=AizaSyCqhjgrPtr_La56sdUkjfav_laCqhjgrPtr_2s   |          |        
++------------------------+------------------------------------------------------+----------+        
+
+
+If you are absolutely sure that you want to ignore the above files from talisman detectors, consider pasting the following format in .talismanrc file in the project root
+
+fileignoreconfig:
+- filename: sec_files/password.txt
+  checksum: f1cfc4e74637c1399a305acaf7991724f54503ec159d4f6ad969cacdfb8e04c8
+- filename: sec_files/file3
+  checksum: b058bbb84595454d550863a6ae7fd501863acd9692ec3cc699bc6f76dd0e38a5
+- filename: sec_files/file2
+  checksum: b39b1a7ab78830bc35571285a210d1d0b0aa2b213caf2fea02cee664c473b237
+
+error: failed to push some refs to 
+
+If there are files that SHOULD NOT BE SCANNED you consider pasting the following format in .talismanrc file as listed in the "fileignoreconfig" section
+
+Example if you want to ignore file3
+
+fileignoreconfig:
+- filename: sec_files/file3
+  checksum: b058bbb84595454d550863a6ae7fd501863acd9692ec3cc699bc6f76dd0e38a5
+  
