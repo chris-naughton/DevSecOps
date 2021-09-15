@@ -1,0 +1,50 @@
+Adding checks to make sure that the deployment was successful. If failed then fail the build
+
+The cause of this was because the build step in the Jenkinsfile was using a basic apply command
+
+sh "kubectl apply -f k8s_deployment_service.yaml"
+
+New stage that will run: 
+stage('K8S Deployment - DEV') {
+      steps {
+        parallel(
+          "Deployment": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "bash k8s-deployment.sh"
+            }
+          },
+          "Rollout Status": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "bash k8s-deployment-rollout-status.sh"
+            }
+          }
+        )
+      }
+    }
+
+The deployment will then be handled by a script
+If the deploy fails then roll it back
+
+NOTE: The env vars that are referenced in the bash scripts are coming from this part of the 
+Jenkinsfile: 
+
+environment {
+    deploymentName = "devsecops"
+    containerName = "devsecops-container"
+    serviceName = "devsecops-svc"
+    imageName = "soundsystem/numeric-app:${GIT_COMMIT}"
+    applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com/"
+    applicationURI = "/increment/99"
+  }
+
+root@devsecops-cloud:~$ kubectl get all
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/devsecops-5dfd9679df-xvq8r   1/1     Running   0          2m8s
+pod/devsecops-5dfd9679df-zhrh8   1/1     Running   0          2m6s
+pod/node-app-6b8496456-ltxx4     1/1     Running   3          4d20h
+
+root@devsecops-cloud:~$ kubectl rollout history deploy devsecops
+deployment.apps/devsecops 
+REVISION  CHANGE-CAUSE
+
+14        kubectl set image deploy devsecops devsecops-container=soundsystem/numeric-app:8a745ca0d64d52dbc23be67d2c43833ac526160f --namespace=default --record=true

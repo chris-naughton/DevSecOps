@@ -1,0 +1,120 @@
+scan the docker image produced by the docker build stage
+
+adding this stage to the Jenkinsfile
+
+
+stage('Vulnerability Scan - Kubernetes') {
+      steps {
+        parallel(
+          "OPA Scan": {
+            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
+          },
+          "Kubesec Scan": {
+            sh "bash kubesec-scan.sh"
+          },
+          "Trivy Scan": {
+            sh "bash trivy-k8s-scan.sh"
+          }
+        )
+      }
+    }
+
+The scan itself will happen via a bash script
+
+Script will only fail on CRITICAL as is now with an exit code of 1
+
+It is now working: 
++ bash trivy-k8s-scan.sh
+soundsystem/numeric-app:36f6ac81680069a002138b467f4ff910d9055c1e
+soundsystem/numeric-app:36f6ac81680069a002138b467f4ff910d9055c1e (alpine 3.14.2)
+
+================================================================================
+Total: 0 (LOW: 0, MEDIUM: 0, HIGH: 0)
+
+home/k8s-pipeline/app.jar
+
+=========================
+
+Total: 6 (LOW: 0, MEDIUM: 3, HIGH: 3)
+
++------------------------------------------------+------------------+----------+-------------------+--------------------------------+
+
+|                    LIBRARY                     | VULNERABILITY ID | SEVERITY | INSTALLED VERSION |         FIXED VERSION          |
+
++------------------------------------------------+------------------+----------+-------------------+--------------------------------+
+
+| org.apache.tomcat.embed:tomcat-embed-core      | CVE-2020-17527   | HIGH     | 9.0.39            | 8.5.60, 9.0.40, 10.0.2         |
+
++                                                +------------------+          +                   +--------------------------------+
+
+|                                                | CVE-2021-25122   |          |                   | 8.5.63, 9.0.43, 10.0.2         |
+
++                                                +------------------+          +                   +--------------------------------+
+
+|                                                | CVE-2021-25329   |          |                   | 7.0.108, 8.5.61, 9.0.41,       |
+
+|                                                |                  |          |                   | 10.0.2                         |
+
++                                                +------------------+----------+                   +--------------------------------+
+
+|                                                | CVE-2021-24122   | MEDIUM   |                   | 7.0.107, 8.5.60, 9.0.40,       |
+
+|                                                |                  |          |                   | 10.0.0-M10                     |
+
++------------------------------------------------+                  +          +                   +--------------------------------+
+
+| org.apache.tomcat.embed:tomcat-embed-websocket |                  |          |                   | 10.0.0-M10, 9.0.40, 8.5.60,    |
+
+|                                                |                  |          |                   | 7.0.107                        |
+
++------------------------------------------------+------------------+          +-------------------+--------------------------------+
+
+| org.glassfish:jakarta.el                       | CVE-2021-28170   |          | 3.0.3             |                                |
+
++------------------------------------------------+------------------+----------+-------------------+--------------------------------+
+
+soundsystem/numeric-app:36f6ac81680069a002138b467f4ff910d9055c1e (alpine 3.14.2)
+
+================================================================================
+
+Total: 0 (CRITICAL: 0)
+
+Exit Code : 0
+
+Image scanning passed. No vulnerabilities found
+
+Making updates to the pom.xml to app version of tomcat
+
+<tomcat.version>9.0.43</tomcat.version>
+
++ bash trivy-k8s-scan.sh
+
+soundsystem/numeric-app:497cf1367c5be525410a6a734b113b15eff78e9b
+soundsystem/numeric-app:497cf1367c5be525410a6a734b113b15eff78e9b (alpine 3.14.2)
+
+================================================================================
+
+Total: 0 (LOW: 0, MEDIUM: 0, HIGH: 0)
+home/k8s-pipeline/app.jar
+
+=========================
+
+Total: 1 (LOW: 0, MEDIUM: 1, HIGH: 0)
+
++--------------------------+------------------+----------+-------------------+---------------+
+
+|         LIBRARY          | VULNERABILITY ID | SEVERITY | INSTALLED VERSION | FIXED VERSION |
+
++--------------------------+------------------+----------+-------------------+---------------+
+
+| org.glassfish:jakarta.el | CVE-2021-28170   | MEDIUM   | 3.0.3             |               |
+
++--------------------------+------------------+----------+-------------------+---------------+
+
+soundsystem/numeric-app:497cf1367c5be525410a6a734b113b15eff78e9b (alpine 3.14.2)
+
+================================================================================
+
+Total: 0 (CRITICAL: 0)
+Exit Code : 0
+Image scanning passed. No vulnerabilities found

@@ -1,0 +1,67 @@
+Using OPA Conftest to check k8s deploy yaml files
+This is added as a new stage in the Jenkinsfile before deploying the application
+
+
+tage('Vulnerability Scan - Kubernetes') {
+      steps {
+        sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
+      }
+    }
+
+It failed! 
+
++ docker run --rm -v /var/lib/jenkins/workspace/devsecops-numeric-application:/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml
+
+FAIL - k8s_deployment_service.yaml - main - Containers must not run as root - use runAsNonRoot wihin container security context
+
+
+
+4 tests, 3 passed, 0 warnings, 1 failure, 0 exceptions
+
+After the build passed I can see that one of my pods is in a non running state" 
+
+root@devsecops-cloud:~$ kubectl get pods
+NAME                         READY   STATUS                       RESTARTS   AGE  
+devsecops-5f7d57d475-cgbkg   1/1     Running                      0          17m  
+devsecops-5f7d57d475-gz6r7   1/1     Running                      0          17m  
+devsecops-84bf77b6f4-j72ck   0/1     CreateContainerConfigError   0          83s  
+nginx-pod                    1/1     Running                      4          4d22h
+node-app-6b8496456-ltxx4     1/1     Running                      3          4d20h
+
+after running "kubectl describe pod <id here>"
+
+Events:
+  Type     Reason     Age                    From               Message
+  ----     ------     ----                   ----               -------
+  Normal   Scheduled  3m46s                  default-scheduler  Successfully assigned default/devsecops-84bf77b6f4-j72ck to devsecops-cloud
+  Warning  Failed     101s (x12 over 3m44s)  kubelet            Error: container has runAsNonRoot and image has non-numeric user (k8s-pipeline), cannot verify user is non-root (pod: "devsecops-84bf77b6f4-j72ck_default(5e3d434b-5549-47aa-a675-d8fefe332ef3)", container: devsecops-container)        
+  Normal   Pulled     87s (x13 over 3m44s)   kubelet            Container image "soundsystem/numeric-app:f437153476a136936eea6cf129ac6eb215add6f2" already present on machine
+
+Because runAsNonRoot was added to the yaml in the securitycontext the image has to be run as a numeric user
+
+For now I am going to roll back the deployment then fix in the next set of notes
+root@devsecops-cloud:~$ kubectl get deploy
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+devsecops   2/2     1            2           4d20h
+
+root@devsecops-cloud:~$ kubectl rollout status deploy devsecops
+Waiting for deployment "devsecops" rollout to finish: 1 out of 2 new replicas have been updated...
+
+root@devsecops-cloud:~$ kubectl rollout undo deploy devsecops
+deployment.apps/devsecops rolled back
+
+root@devsecops-cloud:~$ kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+devsecops-5f7d57d475-cgbkg   1/1     Running   0          25m  
+devsecops-5f7d57d475-gz6r7   1/1     Running   0          25m  
+
+As a quick fix I have added "runAsUser: 100" to the security context
+
+root@devsecops-cloud:~$ kubectl get pods
+NAME                         READY   STATUS        RESTARTS   AGE  
+devsecops-6448b8dbc-9kqgj    1/1     Running       0          68s  
+devsecops-6448b8dbc-q84qf    1/1     Running       0          64s  
+
+and the user defined in the Dockerfile is there as expected: 
+root@devsecops-cloud:~$ kubectl exec -ti devsecops-6448b8dbc-9kqgj -- id
+uid=100(k8s-pipeline) gid=101(pipeline) groups=101(pipeline)

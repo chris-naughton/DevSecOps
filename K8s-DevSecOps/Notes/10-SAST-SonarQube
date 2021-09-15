@@ -5,6 +5,10 @@ docker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000
 
 USE: docker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:8.9.1-community
 
+AFTER THE VM COMES UP: 
+root@devsecops-cloud:~$ docker start 28237f921051ec44f2868d3eca27b8c5e99c5c3b7d006521731b11a92d992068
+28237f921051ec44f2868d3eca27b8c5e99c5c3b7d006521731b11a92d992068
+
 After Sonar is up and running I am adding a new stage to the Jenkinsfile with this
 
 mvn sonar:sonar \

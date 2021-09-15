@@ -1,0 +1,4 @@
+Adding a dependency check plugin to the pom.xml file
+https://owasp.org/www-project-dependency-check/
+
+I have added the dependency checks prior to the docker image step

@@ -1,0 +1,49 @@
+usage example: 
+docker run --rm  aquasec/trivy --severity LOW --exit-code 0 python:3.4-alpine
+
+To have this work with any CI system you need to work with teh exit code provided 
+Either 0 or 1
+Default is 0 
+
+This is going to be run as a script within the pipeline and scan the base image in the dockerfile
+This stage occurs before the docker build then push
+
+This is my first usage of a paralell step in the Jenkinsfile
+
+Script for reference: 
+#!/bin/bash
+
+dockerImageName=$(awk 'NR==1 {print $2}' Dockerfile) # get image name from dockerfile with awk
+echo $dockerImageName
+
+docker run --rm -v $WORKSPACE:/root/.cache/ aquasec/trivy:0.17.2 -q image --exit-code 0 --severity HIGH --light $dockerImageName
+docker run --rm -v $WORKSPACE:/root/.cache/ aquasec/trivy:0.17.2 -q image --exit-code 1 --severity CRITICAL --light $dockerImageName
+
+    # Trivy scan result processing
+    exit_code=$?
+    echo "Exit Code : $exit_code"
+
+    # Check scan results
+    if [[ "${exit_code}" == 1 ]]; then
+        echo "Image scanning failed. Vulnerabilities found"
+        exit 1;
+    else
+        echo "Image scanning passed. No CRITICAL vulnerabilities found"
+    fi;
+
+Stage for reference: 
+
+stage('Vulnerability Scan - Docker') {
+      steps {
+        parallel(
+          "Dependency Scan": {
+            sh "mvn dependency-check:check"
+          },
+          "Trivy Scan": {
+            sh "bash trivy-docker-image-scan.sh"
+          }
+        )
+      }
+    }
+
+I updated the dockerfile with a new base image for the pipeline

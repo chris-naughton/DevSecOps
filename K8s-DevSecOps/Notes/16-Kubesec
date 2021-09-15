@@ -1,0 +1,77 @@
+Opensource K8s scanner tool
+In this case using it to scan my deployment
+
+reference: https://kubesec.io/
+
+This is being added to the Jenkinsfile as a new build step that will call a bash script
+TO call the kubesec REST APIs or Docker commands
+
+stage('Vulnerability Scan - Kubernetes') {
+      steps {
+        parallel(
+          "OPA Scan": {
+            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
+          },
+          "Kubesec Scan": {
+            sh "bash kubesec-scan.sh"
+          }
+        )
+      }
+    }
+
+It failed! 
+
++ bash kubesec-scan.sh
+Score is 1, which is less than or equal to 5.
+Scanning Kubernetes Resource has Failed
+script returned exit code 1
+
+after adding suggestions to the k8s_deployment_service file it passed!
+
++ bash kubesec-scan.sh
+Score is 5
+Kubesec Scan Passed with a score of 5 points
+
+checking if readOnlyRootFilesystem
+
+root@devsecops-cloud:~$ kubectl get pod devsecops-76846d6c75-4cq6q -o yaml | grep read
+      readOnly: true
+    key: node.kubernetes.io/not-ready
+    ready: true
+
+It was not set nor was it picked up by the deployment script because if the deployment exists 
+then it will only update the image. As the deploymetn already existed then it did not 
+apply the changes set in the k8s_deployment_service file
+
+I commented out the majority of the k8s-deployment.sh script 
+After running the build again the deployment is having issues [it rolled back so that is rad!]: 
+
+
++ bash k8s-deployment-rollout-status.sh
+error: timed out waiting for the condition
+Deployment devsecops Rollout has Failed
+deployment.apps/devsecops rolled back
+script returned exit code 1
+
+Because the "readOnlyRootFilesystem" was added the Springboot app can not make updates
+to the /tmp directory
+
+To fix this I am going to create a tmp volume that the application can access
+
+  volumes:
+      - name: vol
+        emptyDir: {}
+      serviceAccountName: default # in real world use custom account with RBAC rules
+      containers:
+      - image: replace
+        name: devsecops-container
+        volumeMounts:
+        - mountPath: /tmp
+          name: vol
+
+root@devsecops-cloud:~$ kubectl get pod devsecops-54df98dd58-hl2mx -o yaml | grep read
+              f:readOnlyRootFilesystem: {}
+      readOnlyRootFilesystem: true
+      readOnly: true
+    key: node.kubernetes.io/not-ready
+    ready: true

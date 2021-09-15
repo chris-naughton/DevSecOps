@@ -1,0 +1,52 @@
+OPA Conftest is used to test Dockerfiles themselves 
+
+Open Policy Agent
+
+Conftest can be used to write tests for: K8s configs, Terraform code, and Dockerfiles
+
+Uses the Rego lang
+
+Testing this out with docker.rego
+
+Example: 
+My pods are running as root currently...
+root@devsecops-cloud:~$ kubectl exec -ti devsecops-<ID-HERE> -- id
+uid=0(root) gid=0(root) groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel),11(floppy),20(dialout),26(tape),27(video)
+
+Repo of rules: 
+https://github.com/gbrindisi/dockerfile-security
+
+Using this as my baseline for tests: 
+https://github.com/gbrindisi/dockerfile-security/blob/main/dockerfile-security.rego
+
+Rego file has been added to the repo
+Jenkinsfile has been updated with a new step as well this is included in the Vuln Scan for docker
+
+stage('Vulnerability Scan - Docker') {
+      steps {
+        parallel(
+          "Dependency Scan": {
+            sh "mvn dependency-check:check"
+          },
+          "Trivy Scan": {
+            sh "bash trivy-docker-image-scan.sh"
+          },
+          "OPA Conftest": {
+            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
+          }
+        )
+      }
+    }
+
+It failed! 
+Status: Downloaded newer image for openpolicyagent/conftest:latest
+
+FAIL - Dockerfile - main - Line 0: use a trusted base image
+
+FAIL - Dockerfile - main - Line 3: Use COPY instead of ADD
+
+FAIL - Dockerfile - main - Do not run as root, use USER instead
+
+After changes: 
+root@devsecops-cloud:~$ kubectl exec -ti devsecops-5f7d57d475-cgbkg -- id
+uid=100(k8s-pipeline) gid=101(pipeline) groups=101(pipeline)

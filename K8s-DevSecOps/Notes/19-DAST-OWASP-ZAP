@@ -1,0 +1,93 @@
+Dynamic Application Security Testing using the OWASP top 10
+
+reference: https://www.zaproxy.org/docs/docker/
+
+The scan is run via a docker command with a volume 
+In this case it is only running an API scan using the openapi spec
+
+Adding dependency to the pom.xml to see the endpoints
+
+Adding the scan to the Jenkinsfile after the Int tests have run
+
+stage('OWASP ZAP - DAST') {
+      steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+          sh 'bash zap.sh'
+        }
+      }
+    }
+
+Generated a pipeline script
+
+publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP Report', reportTitles: 'OWASP ZAP Report'])
+
+I added the above to the post always stage
+
+The scan reveals a X-Content-Type-Options Header Missing finding
+
+Adding this dependency to the pom.xml file
+
+<dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+
+I have added a new class to the application as well called WebSecurityConfig.java
+
+Header warning is no longer being thrown 
+
+WARN-NEW: Unexpected Content-Type was returned [100001] x 3 
+
+	http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/compare/10 (200)
+
+	http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/ (200)
+
+	http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/compare/10/ (200)
+
+FAIL-NEW: 0	FAIL-INPROG: 0	WARN-NEW: 1	WARN-INPROG: 0	INFO: 0	IGNORE: 0	PASS: 114
+
+Exit Code : 2
+
+OWASP ZAP Report has either Low/Medium/High Risk. Please check the HTML Report
+
+IGNORE TESTS: 
+
+To ignore tests I am going to: 
+1. create a config file with: This was run from /var/lib/jenkins/workspace/devsecops-numeric-application
+
+docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-weekly zap-api-scan.py -t http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/v3/api-docs -f openapi -g gen_file
+
+2. I want to ignore this WARN-NEW: Unexpected Content-Type was returned [100001]
+Specific the ID of 100001
+
+3. Copy the url where the warning is happening 
+http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/
+
+4. I am deleting all the ruled in the file that was generated at step 1 except what I 
+want to ignore
+100001  IGNORE  http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/
+
+5. To use this: 
+
+docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-weekly zap-api-scan.py -t http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/v3/api-docs -f openapi -c gen_file
+
+Result: 
+IGNORE-NEW: A Server Error response code was returned by the server [100000] x 8
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/8XFT4 (500)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/XRMHM (500)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/compare/10W86R1 (500)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/compareY042C (500)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/increment/10STH2Z (500)
+IGNORE-NEW: Unexpected Content-Type was returned [100001] x 31
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/compare/10 (200)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/ (200)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/compare/10/ (200)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/?-s (200)
+        http://naughtron-devsecops.eastus.cloudapp.azure.com:32025/compare/10?-s (200)
+FAIL-NEW: 0     FAIL-INPROG: 0  WARN-NEW: 0     WARN-INPROG: 0  INFO: 0 IGNORE: 2       PASS: 114
+root@devsecops-cloud:/var/lib/jenkins/workspace/devsecops-numeric-application$ echo $?
+0 <--- scan should pass now
+
+zap.sh has been updated
+zap_rules has been added to the repo
+
