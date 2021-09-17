@@ -1,0 +1,27 @@
+Adding this to the Jenkinsfile so it can roll out a new deployment to prod
+
+stage('K8S Deployment - PROD') {
+      steps {
+        parallel(
+          "Deployment": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "sed -i 's#replace#${imageName}#g' k8s_PROD-deployment_service.yaml"
+              sh "kubectl -n prod apply -f k8s_PROD-deployment_service.yaml"
+            }
+          },
+          "Rollout Status": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "bash k8s-PROD-deployment-rollout-status.sh"
+            }
+          }
+        )
+      }
+    }
+This is using a new deployment YAML that has some added secutity settings 
+
+After deploy is complete: 
+
+devsecops-856b7c57d6-k5xqp   2/2     Running   0          119s
+devsecops-856b7c57d6-lv962   2/2     Running   0          119s
+devsecops-856b7c57d6-mgt44   2/2     Running   0          119s
+node-app-745b87755-p5dpp     2/2     Running   0          28m 

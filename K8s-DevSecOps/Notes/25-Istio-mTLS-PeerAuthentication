@@ -1,0 +1,49 @@
+service to service authentication 
+
+Reference: 
+https://istio.io/latest/docs/reference/config/security/peer_authentication/
+
+Making use of PeerAuthentication
+This has different modes: 
+
+Permissive Mode: 
+- Traffic within the Istio mesh is encrypted
+- Traffic from outside the Istio mesh is encrypted
+
+Strict Mode: 
+- Traffic within the Istio mesh is encrypted
+- Traffic from outside the Istio mesh is UN-encrypted
+
+Disable Mode: 
+- Traffic withing and from outside the Istio mesh is UN-encrypted
+
+To see all Custom Resource Definitions (CRD)
+> root@devsecops-cloud:~$ k get crd
+NAME                                       CREATED AT
+...
+peerauthentications.security.istio.io      2021-09-16T19:41:31Z
+...
+
+At the moment it is not enabled in any of the namespaces 
+> root@devsecops-cloud:~$ k get pa -A
+No resources found
+
+I am using this YAML to test the different modes: 
+
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: istio-system # this is the namespace that it will be applied to
+spec:
+  mtls:
+    mode: DISABLE # mode setting
+
+Apply with: 
+k apply -f peerauth.yaml
+
+> root@devsecops-cloud:~$ k apply -f peerauth.yaml 
+peerauthentication.security.istio.io/istio-system created
+
+root@devsecops-cloud:~$ k get pa
+NAME           MODE      AGE 
+istio-system   DISABLE   2m2s

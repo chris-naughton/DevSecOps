@@ -1,0 +1,65 @@
+In this instance I am using the automatic injection approach as opposed to manual injection
+Example Commands: 
+> kubectl label namesapce <namespace-here> istio-injection=enabled
+> kubectl apply -f <name-here>.yaml
+
+Reminder all communication happens through the Envoy proxies not the services
+
+Creating a new namespace for deploying the application to production: 
+> root@devsecops-cloud:~/istio-1.9.0$ k create ns prod
+namespace/prod created
+
+Create a new deployment in the prod namespace for the node service 
+> root@devsecops-cloud:~/istio-1.9.0$ k -n prod create deploy node-app --image <teachers-service-image>
+
+Expose the new namespace with cluster ip service
+> root@devsecops-cloud:~/istio-1.9.0$ k -n prod expose deploy node-app --name node-service --port 5000
+service/node-service exposed
+
+root@devsecops-cloud:~/istio-1.9.0$ k get all -n prod
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/node-app-7b9f5fd4c9-qk6sn   1/1     Running   0          12s
+
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE  
+service/node-app       ClusterIP   10.110.37.195   <none>        5000/TCP   3m29s
+service/node-service   ClusterIP   10.100.34.144   <none>        5000/TCP   3m17s
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/node-app   1/1     1            1           12s
+
+NAME                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/node-app-7b9f5fd4c9   1         1         1       12s
+
+In order to autoload the sidecar I need to label my namespace 
+root@devsecops-cloud:~/istio-1.9.0$ k get ns --show-labels
+NAME              STATUS   AGE    LABELS
+default           Active   7d2h   <none>
+istio-system      Active   35m    istio-injection=disabled
+kube-node-lease   Active   7d2h   <none>
+kube-public       Active   7d2h   <none>
+kube-system       Active   7d2h   <none>
+prod              Active   10m    <none>
+
+root@devsecops-cloud:~/istio-1.9.0$ k label ns prod istio-injection=enabled
+namespace/prod labeled
+
+root@devsecops-cloud:~/istio-1.9.0$ k get ns --show-labels
+NAME              STATUS   AGE    LABELS
+default           Active   7d2h   <none>
+istio-system      Active   36m    istio-injection=disabled
+kube-node-lease   Active   7d2h   <none>
+kube-public       Active   7d2h   <none>
+kube-system       Active   7d2h   <none>
+prod              Active   11m    istio-injection=enabled 
+
+After injection is enabled you need to restart the deployment so that a 
+new pod is created 
+root@devsecops-cloud:~/istio-1.9.0$ k -n prod rollout restart deploy node-app
+deployment.apps/node-app restarted
+
+root@devsecops-cloud:~/istio-1.9.0$ k get all -n prod
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/node-app-745b87755-p5dpp   2/2     Running   0          18s
+
+Further verification can occur: 
+root@devsecops-cloud:~/istio-1.9.0$ k -n prod describe pod/node-app-<ID HERE>

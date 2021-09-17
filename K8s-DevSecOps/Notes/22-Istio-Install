@@ -1,0 +1,53 @@
+Open framework for connecting, securing, managing and monitoring microservices
+
+- Envoy:Runs as a sidecar proxy 
+
+The control plane is made up of: 
+- Pilot: core for traffic management 
+- Citadel: service to service comms over mTLS
+- Galley: interp yaml into a format that istio understands
+
+Installing on the VM Istio with: 
+curl -Ls https://istio.io/downloadIstio | ISTIO_VERSION=1.9.0 sh -
+cd istio-1.9.0
+export PATH=$PWD/bin:$PATH
+istioctl install --set profile=demo -y && kubectl apply -f samples/addons
+
+Using the demo profile
+
+creates a new namespace called "istio-system"
+configmap "istio-sidecar-injector" is created"
+
+Custom resource managers: 
+virtualservice.networking.istio.io 
+destination.networking.istio.io 
+
+root@devsecops-cloud:~/istio-1.9.0$ kubectl -n istio-system get all
+NAME                                       READY   STATUS    RESTARTS   AGE
+pod/grafana-784c89f4cf-4s4bf               1/1     Running   0          5m48s
+pod/istio-egressgateway-65b9c8b54f-qqj4d   1/1     Running   0          6m3s
+pod/istio-ingressgateway-56d9b7fdb-9z8fv   1/1     Running   0          6m3s
+pod/istiod-89dc6db9c-m4kx2                 1/1     Running   0          6m17s
+pod/jaeger-7f78b6fb65-5ftl9                1/1     Running   0          5m48s
+pod/kiali-dc84967d9-tkkpr                  1/1     Running   0          5m48s
+pod/prometheus-7bfddb8dbf-sjhg4            2/2     Running   0          5m47s
+
+NAME                           TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)
+service/grafana                ClusterIP      10.110.176.141   <none>        3000/TCP
+service/istio-egressgateway    ClusterIP      10.104.127.249   <none>        80/TCP,443/TCP,15443/TCP                                                     6m2s
+service/istio-ingressgateway   LoadBalancer   10.102.30.107    <pending>     15021:32193/TCP,80:30587/TCP,443:30869/TCP,31400:32283/TCP,15443:32664/TCP   6m2s
+service/istiod                 ClusterIP      10.106.30.118    <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP                                        6m17s
+service/jaeger-collector       ClusterIP      10.104.23.158    <none>        14268/TCP,14250/TCP   
+service/kiali                  ClusterIP      10.100.134.133   <none>        20001/TCP,9090/TCP    
+service/prometheus             ClusterIP      10.111.75.172    <none>        9090/TCP
+service/tracing                ClusterIP      10.107.108.3     <none>        80/TCP
+service/zipkin                 ClusterIP      10.97.71.53      <none>        9411/TCP
+
+All of the services are using ClusterIp to access them for now this needs to be 
+updated to NodePort
+
+1. root@devsecops-cloud:~/istio-1.9.0$ kubectl -n istio-system edit svc kiali
+2. root@devsecops-cloud:~/istio-1.9.0$ kubectl -n istio-system get svc kiali
+NAME    TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                          AGE
+kiali   NodePort   10.100.134.133   <none>        20001:32732/TCP,9090:31322/TCP   10m
+3. I can now access it via: http://naughtron-devsecops.eastus.cloudapp.azure.com:32732/kiali/console/overview?duration=60&refresh=15000

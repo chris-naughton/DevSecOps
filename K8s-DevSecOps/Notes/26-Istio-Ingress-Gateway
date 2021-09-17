@@ -1,0 +1,76 @@
+To route traffic you use a Virtual Service
+A virtual service lets you config how a request is reouted to a service within 
+an istio mesh
+
+My service is listening on 8080
+
+root@devsecops-cloud:~$ k -n prod get svc
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+devsecops-svc   ClusterIP   10.111.253.111   <none>        8080/TCP   19h 
+
+Now making use of 
+gateways.networking.istio.io CRD
+virtualservices.networking.istio.io CRD
+
+GATEWAY YAML
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: devsecops-gateway
+  namespace: prod
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*" # calls coming from ANY host you can also specify
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: devsecops-numeric
+  namespace: prod
+spec:
+  hosts:
+  - "*" # calls coming from ANY host but using routing rules to specific endpoints
+  gateways:
+  - devsecops-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /increment
+    - uri:
+        exact: /
+    route:
+    - destination:
+        host: devsecops-svc
+        port:
+          number: 8080
+
+root@devsecops-cloud:~$ k get vs,gateway -n prod
+NAME                                                   GATEWAYS                HOSTS   AGE
+virtualservice.networking.istio.io/devsecops-numeric   ["devsecops-gateway"]   ["*"]   14s
+
+NAME                                            AGE
+gateway.networking.istio.io/devsecops-gateway   56s
+
+Get the loadbalancer: 
+
+root@devsecops-cloud:~$ k -n istio-system get svc istio-ingressgateway
+NAME                   TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)
+                                              AGE
+istio-ingressgateway   LoadBalancer   10.102.30.108   <pending>     15021:32193/TCP,80:30587/TCP,443:30869/TCP,31400:32283/TCP,15443:32664/TCP   21h
+
+Check the connection on port 80:
+
+root@devsecops-cloud:~$ curl localhost:30587/
+Kubernetes DevSecOp
+
+It is working! 
+
+http://naughtron-devsecops.eastus.cloudapp.azure.com:30587/increment/99

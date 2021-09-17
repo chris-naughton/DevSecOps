@@ -1,0 +1,17 @@
+Monitor the cluster and nodes
+- resource usage
+- availability and health
+
+Monitor deployments and pods
+- missing and failed pods
+- running vs. the desired state
+- pod resource usage requests and limits
+
+Monitoring applications: 
+- application availability 
+- application health and performance
+
+Opensource Tools: 
+
+Prometheus
+Grafana
