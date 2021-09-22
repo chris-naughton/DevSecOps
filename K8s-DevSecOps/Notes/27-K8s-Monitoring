@@ -15,3 +15,15 @@ Opensource Tools:
 
 Prometheus
 Grafana
+
+Prometheus: 
+This is a time series databae 
+Whitebox monitoring 
+
+Grafana and Prometheus must be set to NodePort in order to be accessed. 
+
+> root@devsecops-cloud:~$ k -n istio-system edit svc grafana
+and set it to NodePort
+
+http://naughtron-devsecops.eastus.cloudapp.azure.com:30192/ui/#/
+

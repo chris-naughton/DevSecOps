@@ -1,0 +1,52 @@
+Reference Screen: 
+
+Container: Application or Db for example
+
+Pod: This is where Containers run. In k8s this is the smallest deployable unit. 
+
+Woker Nodes: are where the Pods run. These are VMs running on some OS. 
+
+High Availabliity: comes from running one or more Woker Nodes. 
+
+Master Node: This manages all the worker nodes
+
+ETCD data store: This is where all configuration information for the Woker Nodes is stored
+This is all the information for the entier cluster
+
+Scheduler: Uses the pod specification to deploy a pod to a Woker Node. the scheduler
+finds a node to deploy the pod to based on resources available
+
+Kube API Server: This is the ONLY component that interacts with the ETCD data store directly. The scheduler talks to it as well to fetch the pod specification. 
+
+Controller: Controls replication and ensures that X number of pods remain in a cunning state. 
+
+Kubelet: Agent responsible for running the pods by fetching details from the Kube API server. 
+
+Container Runtime Interface (CRI): Used by the Kubelet to download containers. 
+
+Open Container Init (OCI): This is used by the CRI to download the images from a container registry
+
+Container Network Interface (CNI): One the pod is deployed this is used by the kubelet to assign a unique IP to a pod deployed
+
+Kube-Proxy: This is used by a service enables external applications or users to access
+pods running on any node. 
+
+Container Storage Interface (CSI): This talks to your external data storage via Volumes
+
+Volumes: This is a mapping ofr a Persistent Volume Claim to a Persistent Volume
+
+gVisor: Adds a layer of isolation between the running container and the host OS. 
+
+runsc: Low level runtime that is only supported by containerd [see reference screenshot]
+
+AppArmor/SecComp: these can also be used to restrict the system calls being made to the host from containers
+
+API Server Legend: 
+
+Authentication (IdP) 
+    Authorization (RBAC) - If failed request is dropped here
+        Mutation Admission Controller - mTLS inject sidecard container config
+            Object schema validation 
+                Validation Admission Controller - does the namespace you want exist This is where OPA validation is happening as well. 
+
+If all of the above are validated THEN the data is added to the ETCD datastore

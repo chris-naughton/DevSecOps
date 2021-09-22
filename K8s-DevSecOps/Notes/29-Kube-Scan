@@ -1,0 +1,44 @@
+Assessment by risk scan for each node running in the clusers 
+
+https://github.com/octarinesec/kube-scan
+
+
+THIS IS USING THE TEACHERS GIT REPO LOOK INTO OFFICIAL INSTALL: 
+kubectl apply -f https://raw.githubusercontent.com/sidd-harth/kubernetes-devops-security/main/kube-scan.yaml
+
+vops-security/main/kube-scan.yaml
+namespace/kube-scan created
+configmap/kube-scan created
+serviceaccount/kube-scan created
+clusterrole.rbac.authorization.k8s.io/kube-scan created
+clusterrolebinding.rbac.authorization.k8s.io/kube-scan created
+deployment.apps/kube-scan created
+service/kube-scan-ui created
+
+root@devsecops-cloud:~$ kubectl -n kube-scan get all
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/kube-scan-79d8f5cd7c-48wrf   2/2     Running   0          3m13s
+
+NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE  
+service/kube-scan-ui   ClusterIP   10.106.254.194   <none>        80/TCP    3m13s
+
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kube-scan   1/1     1            1           3m13s
+
+NAME                                   DESIRED   CURRENT   READY   AGE
+replicaset.apps/kube-scan-79d8f5cd7c   1         1         1       3m13s
+root@devsecops-cloud:~$
+
+Deployed "risky pod" to the default and prod namesapces 
+
+root@devsecops-cloud:~$ kubectl apply -f risky-pod.yaml -n prod
+pod/nginx-risky-pod created
+service/risky-pod-svc created
+root@devsecops-cloud:~$ kubectl apply -f risky-pod.yaml
+pod/nginx-risky-pod created
+service/risky-pod-svc created
+
+root@devsecops-cloud:~$ kubectl get pod -l run=nginx-risky-pod -A
+NAMESPACE   NAME              READY   STATUS    RESTARTS   AGE
+default     nginx-risky-pod   1/1     Running   0          64s
+prod        nginx-risky-pod   2/2     Running   0          69s

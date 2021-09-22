@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx-risky-pod
+  name: nginx-risky-pod
+spec:
+  volumes: # making use of host volume
+    - name: vol
+      hostPath:
+       path: /etc
+  shareProcessNamespace: true
+  containers:
+  - image: nginx
+    name: nginx-risky-pod
+    ports:
+    - containerPort: 80
+    resources: {}
+    securityContext:
+          capabilities:
+            add:
+             - ALL # using everything
+          readOnlyRootFilesystem: false # allowing read and write to the filesystem
+          allowPrivilegeEscalation: true # allowing for priv esc
+    volumeMounts: # mounting host volume to the container 
+      - name: vol
+        mountPath: /opt
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: nginx-risky-pod
+  name: risky-pod-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx-risky-pod
+  type: LoadBalancer # setting this as a load balancer
