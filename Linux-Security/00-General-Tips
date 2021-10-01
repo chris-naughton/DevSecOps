@@ -1,0 +1,104 @@
+Basic Hardening: 
+
+1. Change the root users password:
+$ passwd (if logged in as root)
+if logged in as a regular user 
+sudo su or sudo -i to switch to root then use the above command 
+
+2. Create a non-root user: 
+$ sudo adduser <USERNAME> (if not root you will need to use sudo)
+$ set a new strong password for the user 
+
+If you need to add a user to a group (ubuntu example)
+$ usermod -aG sudo <USERNAME>
+Confirm with: 
+$ groups <USERNAME>
+This will return "duder : duder sudo"
+
+3. Update the system
+$ sudo apt update : this refreshes the package index. 
+$ sudo apt dist-upgrade -y : this upgreades the distro itself 
+$ you may need to reboot afterwards as well
+
+4. setup unattended upgrades
+$ sudo apt install unattended-upgrades 
+$ sudo dpkg-reconfigure --priority=low unattended-upgrades
+The upgrades need to be configured in the following file 
+$ sudo nano /etc/apt/apt.conf.d/20auto-upgrades 
+You need at least these two lines: 
+APT::Periodic::Update-Package-Lists "1"; enable the package list to be auto refreshed 
+APT::Periodic::Unattended-Upgrade "1"; enables the automatic install of those updates
+
+Next look at this file: 
+$ sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
+
+The Allowed-Origins section is defining what type of updates you want to have
+The default values are security focused: 
+
+"${distro_id}:${distro_codename}";
+"${distro_id}:${distro_codename}-security";
+...
+"${distro_id}ESMApps:${distro_codename}-apps-security";
+"${distro_id}ESM:${distro_codename}-infra-security";
+...
+
+Uncomment: 
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+
+Uncomment: 
+Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+
+Uncomment: 
+Unattended-Upgrade::Remove-Unused-Dependencies "false";
+
+There are other options that will auto-reboot the server however that is out of scope for now. 
+
+5. Lock down openssh
+On another machine
+$ ssh-keygen -t ed25519 : Generate a new key that is not a default RSA type
+- The command will prompt you with the location of where the new key will end up
+- NOTE: if there is a key in this location it will be blown away by the new key
+- Add a passphrase with the ssh key 
+- The new keys will be in the ~/.ssh dir
+- NEVER SHARE THE PRIVIATE KEY OR ITS CONTENTS. the public key (.pub) file is the one you can share. 
+
+Copy the key over to your server 
+$ ssh-copy-id -i ~/.ssh/<KEY_FILE_NAME>.pub <USERNAME>@<SERVERNAME OR IP>
+
+Verify with: 
+$ ssh <USERNAME>@<SERVERNAME OR IP>
+- this is where you will be prompted for the passphrase to unlock the private key 
+
+Disable the ability to ssh into the server with a password so that the key must be used
+- with an existing ssh session running in your terminal open a new terminal
+- ssh into the server with a new terminal [you will now have two active connections to the same server]
+- edit the ssh config file to disable passwords
+$ sudo nano / etc/ssh/sshd_config
+
+Set "PermitRootLogin" to "no"
+Uncomment and set "PasswordAuthentication" to "no" this disables password authentication compleatly 
+
+Restart the ssh service
+$ sudo systemctl restart sshd
+
+Verify that you can connect with another terminal before closing out. 
+
+6. Install Fail2Ban to further lock down ssh
+$ sudo apt install fail2ban
+- to check that it is running
+$ systemctl status fail2ban
+- to see what fail2ban is protecting 
+$ sudo fail2ban-client status
+Status
+|- Number of jail:      1
+`- Jail list:   sshd    <-- already enabled
+
+fail2ban is monitoring sshd and if it sees too many failed ssh connections it will ban 
+the ip
+
+- to update fail2ban so it does NOT ban your ip address
+$ sudo cp /etc/fail2ban/jail.conf jail.local
+- when present jail.local is the preffered conf 
+$ sudo nano jail.local
+- uncomment and update the ignoreip setting to include your public IP address or VPN endpoint. This should be a predictible IP
+ignoreip = 127.0.0.1/8 ::1 

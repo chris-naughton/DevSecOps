@@ -1,0 +1,11 @@
+- Targets for mean time to production should be set up while also mitigating risks, 
+such as insider threats, through the use of “merge requests” and multiple 
+approvers in merge requests.
+
+- Automation modules for specific compliance: HIPPA, PCI-DSS, SOC
+
+- Authentication and validation in code and build repositories
+- Logging all activities associated with code and build updates
+- Sending build reports to developers and stopping everything if a build fails
+- Sending build reports to security and stopping everything if the audit or validation fails
+

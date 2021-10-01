@@ -5,11 +5,37 @@ Detecting first actions:
 
 Installing Falco to the VM: 
 https://falco.org/docs/getting-started/installation/
+- I used this: 
+https://falco.org/docs/getting-started/installation/#debian
+
+
+Installing Falco Sidekick via Helm: 
+
+1. root@devsecops-cloud:~$ kubectl create namespace falco
+namespace/falco create
+
+2. helm repo add falcosecurity https://falcosecurity.github.io/charts
+helm install falco falcosecurity/falco \
+--set falcosidekick.enabled=true \
+--set falcosidekick.webui.enabled=true \
+-n falco 
+
+3. root@devsecops-cloud:~$ kubectl -n falco get all
+- update the ui service so that it is set to NodePort
+
+
 
 Rules are located here: 
 root@devsecops-cloud:/etc/falco$ ls
 falco.yaml              falco_rules.yaml      rules.available
 falco_rules.local.yaml  k8s_audit_rules.yaml  rules.d
+
+You can add rules in the falco_rules.local.yaml as this will take priority
+
+Watch logs: 
+root@devsecops-cloud:/etc/falco$ falco
+Mon Sep 27 21:23:28 2021: Falco version 0.29.1 (driver version 17f5df52a7d9ed6bb12d3b1768460def8439936d)
+
 
 Testing with exec:
 
@@ -66,17 +92,17 @@ root@devsecops-cloud:~$ cat /etc/falco/falco_rules.yaml | grep -i "A shell was s
     '"sh -c uname -r 2>&1"',
     '"sh -c uname -v 2>&1"',
 
-Installing Falco Sidekick via Helm: 
+To enable Slack alerts I first created a new app to generate a webhook 
 
-1. root@devsecops-cloud:~$ kubectl create namespace falco
-namespace/falco create
+https://hooks.slack.com/services/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
 
-2. helm repo add falcosecurity https://falcosecurity.github.io/charts
-helm install falco falcosecurity/falco \
---set falcosidekick.enabled=true \
---set falcosidekick.webui.enabled=true \
--n falco 
+https://falco.org/blog/extend-falco-outputs-with-falcosidekick/
 
-3. root@devsecops-cloud:~$ kubectl -n falco get all
-- update the ui service so that it is set to NodePort
+kubectl create namespace falco
 
+
+
+root@devsecops-cloud:/etc/falco$ 
+helm upgrade falco falcosecurity/falco --set falcosidekick.enabled=true --set falcosidekick.webui.enabled=true --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/XXX/XXX/XXX" --set falcosidekick.config.customfields="environment:production\,datacenter:NH" -n falco
+
+This will update the falco namesapce with the new settings

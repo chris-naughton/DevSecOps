@@ -50,3 +50,7 @@ Authentication (IdP)
                 Validation Admission Controller - does the namespace you want exist This is where OPA validation is happening as well. 
 
 If all of the above are validated THEN the data is added to the ETCD datastore
+
+K8s service layer: This is how external users access the application via ClusterIPs or NodePorts, or External Names 
+
+Ingress: This allows you to expose specific services on specific endpoints Single Service, TLS, Name Based or Simple Fanout

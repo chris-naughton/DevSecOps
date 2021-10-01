@@ -1,4 +1,4 @@
-Talisman
+
 
 GitHub: Code Reop
 
@@ -7,18 +7,76 @@ Mavent Test and Package are used in the pipeline
 
 Jenkins: CI/CD tool
 
-PIT Test
-SonarQube
-Trivy
-Dependency
-OPA
+PIT/Mutation Test:
+- How efficient are unit tests? 
+- PIT will run existing unit tests against an automatically modified version of an application code. 
+- When the application code is modified it should produce a different result so that a given unit test fails
+- If a unit test does not fail it may indicate an issue with the test itself
+- Why do this? traditional unit tests measure line coverate / code that is getting exe'ed by the tests 
+- This is a way to ensure that tests are able to detect faults to help id code that is not tested 
+- changes behavior of a class "mutations" 
+-- if test fails after the mutation then the mutation was caught by the unit test
+-- if test passes after the mutation then the mutation was not caught and the mutation survived 
+-- quality of tests is related to the percentage of mutations squashed
+Notes Reference: 09-Mutation-Tests
 
-Docker: Containers
+Talisman: 
+- Installs a hook into your repo to look for potential secrets or sensitive information 
+- It will validate the outgoing change for items that look suspect: ssh keys/auth tokens/priv keys...
+- Notes Reference: 08-Git-Hooks
 
-K8s
-Kubesec
-OWASP ZAP
-Kube-Bench
+SonarQube: 
+- Static Application Security Testing (SAST)
+- Scan application code to look for security issues
+- Detect areas in the code that need refactoring 
+- Can help to detect bugs early on in the dev cycle 
+- In the case of SonarQube it will point to lines where there could be issues and provide some insight into addressing it
+- Set a quality gate to define standards 
+- Notes Reference: 10-SAST-SonarQube
+
+Dependency checks: 
+- OWASP dependency checker 
+- In the case of the test application it is checking pom.xml and pachages 
+- The evidence gathered is used to id the Common Platform Enumeration (CPE) of the dependency
+- Once the CPE is identified it is compaired against a list of Common Vuln and Exp entries
+- Notes Reference: 11-Dependency-Checks
+
+Trivy:
+- This is a scanner for containers and artifacts (OS packages and Application dependencies)
+- In the pipeline this is being called by a .sh script and relying on the exit code that is produced by the scan. 
+- Notes Reference: 
+-- 12-Trivy-Container-Scanning
+-- 17-Trivy-K8s-image-scanning
+
+Open Policy Agent (OPA) Conftest:
+- Allows you to write tests against structured configuration data 
+- Can be used to test Dockerfiles, Terraform and K8s config files
+- Notes reference: 
+-- 13-OPA-Conftest-dockerfiles
+-- 14-OPA-Conftest-K8s-deploy-yaml
+
+Kubesec: 
+- K*s scanner and analysis tool. This will scan a cluster for common exploits/risks
+- Will provide a score for each discovered vuln
+- takes in a yaml file as an input
+- Notes Reference: 16-Kubesec
+
+DAST using OWASP ZAP: 
+- Tests are executed against the running application 
+- No access to the application source code
+- Discovers vulns by attacking the application 
+- Can be used in prod, but common to use this in dev env
+- Focused on OWASP top 10
+- Notes Reference: 19-DAST-OWASP-ZAP
+
+Kube-bench:
+- Using CIS benchmarks
+- Running tests against the cluster
+- This is commented out of the Jenkinsfile due to permission issues with the install 
+Method in the class
+- Notes Reference: 
+-- 21-KubeBench-CIS
+
 Falco 
 Slack
 Istio
