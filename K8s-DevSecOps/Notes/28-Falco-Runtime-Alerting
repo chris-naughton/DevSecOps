@@ -93,14 +93,11 @@ root@devsecops-cloud:~$ cat /etc/falco/falco_rules.yaml | grep -i "A shell was s
     '"sh -c uname -v 2>&1"',
 
 To enable Slack alerts I first created a new app to generate a webhook 
-
-https://hooks.slack.com/services/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
+Webhook was checked in by mistake, and invalidated 
 
 https://falco.org/blog/extend-falco-outputs-with-falcosidekick/
 
 kubectl create namespace falco
-
-
 
 root@devsecops-cloud:/etc/falco$ 
 helm upgrade falco falcosecurity/falco --set falcosidekick.enabled=true --set falcosidekick.webui.enabled=true --set falcosidekick.config.slack.webhookurl="https://hooks.slack.com/services/XXX/XXX/XXX" --set falcosidekick.config.customfields="environment:production\,datacenter:NH" -n falco
