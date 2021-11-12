@@ -1,0 +1,33 @@
+vagrant@ubuntu-focal:~/terraform-course/demo-1$ cat instance.tf 
+resource "aws_instance" "example" {
+  ami           = var.AMIS[var.AWS_REGION]  # This is pulling from the string var "AWS_REGION" located in vars.tf
+  instance_type = "t2.micro"
+}
+
+vagrant@ubuntu-focal:~/terraform-course/demo-1$ cat provider.tf 
+provider "aws" {
+  access_key = var.AWS_ACCESS_KEY # this is coming from terraform.tfvars and is never checked in
+  secret_key = var.AWS_SECRET_KEY # this ic coming from terraform.tfvars and is never checked in
+  region     = var.AWS_REGION # this is coming from vars.tf
+}
+
+vagrant@ubuntu-focal:~/terraform-course/demo-1$ cat vars.tf 
+variable "AWS_ACCESS_KEY" {
+}
+
+variable "AWS_SECRET_KEY" {
+}
+
+variable "AWS_REGION" {
+  default = "us-east-2"
+}
+
+variable "AMIS" {
+  type = map(string)
+  default = {
+    us-east-2 = "ami-01685d240b8fbbfeb"
+    us-west-2 = "ami-06b94666"
+    eu-west-1 = "ami-0d729a60"
+  }
+}
+
