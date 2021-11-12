@@ -1,0 +1,4 @@
+1. drill down to  D:\<something>\DevSecOps\devops-box
+2. "vagrant up" to bring up the dev-ops box
+3. "vagrant ssh-config" to get ssh info
+4. "vagrant ssh" to connect 

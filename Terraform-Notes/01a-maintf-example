@@ -1,0 +1,16 @@
+variable "myvar"{
+ type = string
+ default = "always be testing"
+}
+
+variable "mymap"{
+ type = map
+ default = {
+   mykey = "my value"
+ }
+}
+
+variable "mylist"{
+ type = list
+ default = [1,2,3]
+}

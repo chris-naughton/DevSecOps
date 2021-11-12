@@ -1,0 +1,37 @@
+- files use the .tf extension
+- example of "hello world": 
+
+        variable "myvar"{
+        type = string
+        default = "always be testing"
+        }
+
+The above variable can be used in two ways: 
+
+        > var.myvar
+        "always be testing"
+        > "${var.myvar}"
+        "always be testing"
+
+> var.myvar
+"always be testing"
+
+> var.mymap
+tomap({
+  "mykey" = "my value"
+})
+
+> var.mymap["mykey"]
+"my value"
+
+> var.mylist[0]
+1
+
+> element(var.mylist, 1)
+2
+
+> slice(var.mylist, 0, 2)
+tolist([
+  1,
+  2,
+])

@@ -1,0 +1,35 @@
+simple var types: 
+- string
+- number/int
+- bool
+
+EXAMPLES: 
+
+variable "a-string"{
+    type = string
+}
+
+variable "a-number"{
+    type = number
+}
+
+variable "true-or-false"{
+    type = bool
+}
+
+complex var types: 
+- list
+[0,1,5,2]
+always ordered
+
+- set 
+like a list but does not keep order and can only contain unique values
+
+- map
+
+- object
+like a map but each element can have a different type
+
+- tuple
+list a list but each element can have a different type
+

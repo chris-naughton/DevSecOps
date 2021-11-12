@@ -1,0 +1,23 @@
+provider "aws" {
+  access_key = "ACCESS_KEY_HERE"
+  secret_key = "SECRET_KEY_HERE"
+  region     = "us-east-2"
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-0d729a60"
+  instance_type = "t2.micro"
+}
+
+- After changes have been made to the file 
+1. "terraform init" inits the provider plugins
+2. "terraform apply" apply the file changes 
+-- type "yes" if things look good
+3. post deploy "Apply complete! Resources: 1 added, 0 changed, 0 destroyed."
+-- confirm in the AWS console 
+4. To REMOVE an instance "terraform destroy"
+-- type "yes" if you want to destroy 
+
+RECCOMENDED BEST 
+1. "terraform plan -out <filename_here>"
+2. "terraform apply <out_filename_here>"
