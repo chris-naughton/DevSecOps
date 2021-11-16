@@ -1,0 +1,4 @@
+1. Deploy pipeline to AWS or GCP 
+2. Add Kyverno policy checks into the pipeline (perhaps after OPA SAST)
+3. Get KubeBench up and running 
+4. Pre-commit for slack webhooks
